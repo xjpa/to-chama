@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>to-chama</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+  </head>
+  <body>
+    <div class="main-container">
+      <h1 style="text-align: center">
+        <a href="https://www.youtube.com/shorts/cEC0-HjfcTQ" target="_blank"
+          >CHAMA ou nao CHAMA?
+        </a>
+        🏹
+      </h1>
+      <div class="video-container">
+        <iframe
+          width="560"
+          height="315"
+          src="https://www.youtube.com/embed/4k538DdrQkg?si=PsbX_9M-O3-q2JnV"
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <div class="year-header" id="yearHeader"></div>
+
+      <div class="nav-buttons">
+        <button onclick="previousWeek()">←</button>
+        <button onclick="nextWeek()">→</button>
+      </div>
+      <div class="week-container" id="weekContainer"></div>
+      <script src="script.js"></script>
+    </div>
+  </body>
+</html>
