@@ -22,18 +22,16 @@ body {
   color: #007bff;
 }
 
-
-.week-container {
+.month-container {
   display: flex;
-  overflow-x: auto;
-  scroll-behavior: smooth;
+  flex-wrap: wrap;
+  justify-content: center;
   width: 100%;
   align-items: flex-start;
-  justify-content: center;
   padding: 0;
 }
 
-.week {
+.month {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   grid-gap: 10px;
@@ -43,19 +41,19 @@ body {
 }
 
 @media (max-width: 1024px) {
-  .week {
+  .month {
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
 @media (max-width: 768px) {
-  .week {
+  .month {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 480px) {
-  .week {
+  .month {
     grid-template-columns: repeat(1, 1fr);
   }
 }
@@ -214,23 +212,21 @@ input[type='text'] {
 }
 
 .video-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    
-  }
-  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.video-container iframe {
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+@media (max-width: 768px) {
   .video-container iframe {
     width: 100%;
-    max-width: 560px;
-    height: auto;
-    aspect-ratio: 16 / 9; 
   }
-  
-  @media (max-width: 768px) {
-    .video-container iframe {
-      width: 100%;
-    }
-  }
-  
+}

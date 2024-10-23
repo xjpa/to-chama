@@ -1,7 +1,7 @@
-const weekContainer = document.getElementById('weekContainer');
+const monthContainer = document.getElementById('monthContainer');
 const yearHeader = document.getElementById('yearHeader');
-let currentWeekOffset = 0;
-let currentWeekStartDateString = '';
+let currentMonthOffset = 0;
+let currentMonthStartDateString = '';
 
 const emojis = ['🎯', '🔥', '💀'];
 const statusClasses = {
@@ -10,21 +10,27 @@ const statusClasses = {
   '💀': 'status-procrastinating',
 };
 
-function getWeekDates(startOffset = 0) {
+function getMonthDates() {
   const today = new Date();
-  const dayOfWeek = today.getDay();
-  const dayDiff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  const startOfWeek = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate() - dayDiff + startOffset * 7
-  );
-  const weekStartDateString = startOfWeek.toISOString().slice(0, 10);
-  const week = [];
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(startOfWeek);
-    date.setDate(startOfWeek.getDate() + i);
-    week.push({
+  const year = today.getFullYear();
+  const month = today.getMonth() + currentMonthOffset;
+  const startOfMonth = new Date(year, month, 1);
+  const monthStartDateString = `${startOfMonth.getFullYear()}-${String(
+    startOfMonth.getMonth() + 1
+  ).padStart(2, '0')}-${String(startOfMonth.getDate()).padStart(2, '0')}`;
+  const daysInMonth = new Date(
+    startOfMonth.getFullYear(),
+    startOfMonth.getMonth() + 1,
+    0
+  ).getDate();
+  const monthDays = [];
+  for (let i = 0; i < daysInMonth; i++) {
+    const date = new Date(
+      startOfMonth.getFullYear(),
+      startOfMonth.getMonth(),
+      i + 1
+    );
+    monthDays.push({
       day: date.toLocaleDateString('en-US', { weekday: 'short' }),
       date: date.toLocaleDateString('en-US', {
         month: 'short',
@@ -33,17 +39,20 @@ function getWeekDates(startOffset = 0) {
       year: date.getFullYear(),
     });
   }
-  return { week, weekStartDateString };
+  const monthName = startOfMonth.toLocaleString('en-US', { month: 'long' });
+  const monthYear = startOfMonth.getFullYear();
+  return { monthDays, monthStartDateString, monthName, monthYear };
 }
 
-function renderWeek() {
-  const { week, weekStartDateString } = getWeekDates(currentWeekOffset);
-  currentWeekStartDateString = weekStartDateString;
-  weekContainer.innerHTML = '';
-  const weekDiv = document.createElement('div');
-  weekDiv.classList.add('week');
+function renderMonth() {
+  const { monthDays, monthStartDateString, monthName, monthYear } =
+    getMonthDates();
+  currentMonthStartDateString = monthStartDateString;
+  monthContainer.innerHTML = '';
+  const monthDiv = document.createElement('div');
+  monthDiv.classList.add('month');
 
-  week.forEach(({ day, date, year }, index) => {
+  monthDays.forEach(({ day, date, year }, index) => {
     const dayDiv = document.createElement('div');
     dayDiv.classList.add('day');
     dayDiv.innerHTML = `
@@ -59,7 +68,7 @@ function renderWeek() {
             </div>
           </div>
         `;
-    weekDiv.appendChild(dayDiv);
+    monthDiv.appendChild(dayDiv);
 
     dayDiv.addEventListener('dragover', handleDragOver);
     dayDiv.addEventListener('drop', handleDropOnList);
@@ -67,15 +76,15 @@ function renderWeek() {
     dayDiv.dataset.dayIndex = index;
   });
 
-  weekContainer.appendChild(weekDiv);
+  monthContainer.appendChild(monthDiv);
 
-  week.forEach((_, index) => {
+  monthDays.forEach((_, index) => {
     initEmojiSelector(index);
     loadTodos(index);
     attachInputListener(index);
   });
 
-  yearHeader.innerText = week[0].year;
+  yearHeader.innerText = `${monthName} ${monthYear}`;
 }
 
 function initEmojiSelector(dayIndex) {
@@ -113,15 +122,15 @@ function closeAllDropdowns() {
 }
 
 function saveTodos(dayIndex, todos) {
-  const weekKey = `week-${currentWeekStartDateString}`;
-  const savedTodos = JSON.parse(localStorage.getItem(weekKey)) || {};
+  const monthKey = `month-${currentMonthStartDateString}`;
+  const savedTodos = JSON.parse(localStorage.getItem(monthKey)) || {};
   savedTodos[dayIndex] = todos;
-  localStorage.setItem(weekKey, JSON.stringify(savedTodos));
+  localStorage.setItem(monthKey, JSON.stringify(savedTodos));
 }
 
 function loadTodos(dayIndex) {
-  const weekKey = `week-${currentWeekStartDateString}`;
-  const savedTodos = JSON.parse(localStorage.getItem(weekKey)) || {};
+  const monthKey = `month-${currentMonthStartDateString}`;
+  const savedTodos = JSON.parse(localStorage.getItem(monthKey)) || {};
   const todoList = document.getElementById(`todo-${dayIndex}`);
   todoList.innerHTML = '';
 
@@ -200,8 +209,8 @@ function attachInputListener(dayIndex) {
 }
 
 function getTodosFromLocalStorage(dayIndex) {
-  const weekKey = `week-${currentWeekStartDateString}`;
-  const savedTodos = JSON.parse(localStorage.getItem(weekKey)) || {};
+  const monthKey = `month-${currentMonthStartDateString}`;
+  const savedTodos = JSON.parse(localStorage.getItem(monthKey)) || {};
   return savedTodos[dayIndex] || [];
 }
 
@@ -306,22 +315,22 @@ function updateTodoEmoji(dayIndex, todoIndex, newEmoji) {
   }
 }
 
-function previousWeek() {
-  currentWeekOffset--;
-  renderWeek();
+function previousMonth() {
+  currentMonthOffset--;
+  renderMonth();
 }
 
-function nextWeek() {
-  currentWeekOffset++;
-  renderWeek();
+function nextMonth() {
+  currentMonthOffset++;
+  renderMonth();
 }
 
 let touchstartX = 0;
 let touchendX = 0;
 
 function handleGesture() {
-  if (touchendX < touchstartX) nextWeek();
-  if (touchendX > touchstartX) previousWeek();
+  if (touchendX < touchstartX) nextMonth();
+  if (touchendX > touchstartX) previousMonth();
 }
 
 document.addEventListener('touchstart', (event) => {
@@ -334,12 +343,12 @@ document.addEventListener('touchend', (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'ArrowRight') nextWeek();
-  if (event.key === 'ArrowLeft') previousWeek();
+  if (event.key === 'ArrowRight') nextMonth();
+  if (event.key === 'ArrowLeft') previousMonth();
 });
 
 window.onload = function () {
-  renderWeek();
+  renderMonth();
 };
 
 let draggedItem = null;
