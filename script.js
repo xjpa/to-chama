@@ -1,6 +1,7 @@
 const weekContainer = document.getElementById('weekContainer');
 const yearHeader = document.getElementById('yearHeader');
 let currentWeekOffset = 0;
+let currentWeekStartDateString = '';
 
 const emojis = ['🎯', '🔥', '💀'];
 const statusClasses = {
@@ -12,29 +13,32 @@ const statusClasses = {
 function getWeekDates(startOffset = 0) {
   const today = new Date();
   const dayOfWeek = today.getDay();
-  const dayDiff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // so that monday is 1st day
+  const dayDiff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
   const startOfWeek = new Date(
-    today.setDate(today.getDate() - dayDiff + startOffset * 7)
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate() - dayDiff + startOffset * 7
   );
+  const weekStartDateString = startOfWeek.toISOString().slice(0, 10);
   const week = [];
-
   for (let i = 0; i < 7; i++) {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
     week.push({
-      day: date.toLocaleDateString('en-US', { weekday: 'short' }), // shorten to 3 characters
+      day: date.toLocaleDateString('en-US', { weekday: 'short' }),
       date: date.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
       }),
-      year: date.getFullYear(), // year tracking
+      year: date.getFullYear(),
     });
   }
-  return week;
+  return { week, weekStartDateString };
 }
 
 function renderWeek() {
-  const week = getWeekDates(currentWeekOffset);
+  const { week, weekStartDateString } = getWeekDates(currentWeekOffset);
+  currentWeekStartDateString = weekStartDateString;
   weekContainer.innerHTML = '';
   const weekDiv = document.createElement('div');
   weekDiv.classList.add('week');
@@ -57,11 +61,10 @@ function renderWeek() {
         `;
     weekDiv.appendChild(dayDiv);
 
-    // drag and drop
     dayDiv.addEventListener('dragover', handleDragOver);
     dayDiv.addEventListener('drop', handleDropOnList);
     dayDiv.addEventListener('dragleave', handleDragLeave);
-    dayDiv.dataset.dayIndex = index; // for later use
+    dayDiv.dataset.dayIndex = index;
   });
 
   weekContainer.appendChild(weekDiv);
@@ -110,14 +113,14 @@ function closeAllDropdowns() {
 }
 
 function saveTodos(dayIndex, todos) {
-  const weekKey = `week-${currentWeekOffset}`;
+  const weekKey = `week-${currentWeekStartDateString}`;
   const savedTodos = JSON.parse(localStorage.getItem(weekKey)) || {};
   savedTodos[dayIndex] = todos;
   localStorage.setItem(weekKey, JSON.stringify(savedTodos));
 }
 
 function loadTodos(dayIndex) {
-  const weekKey = `week-${currentWeekOffset}`;
+  const weekKey = `week-${currentWeekStartDateString}`;
   const savedTodos = JSON.parse(localStorage.getItem(weekKey)) || {};
   const todoList = document.getElementById(`todo-${dayIndex}`);
   todoList.innerHTML = '';
@@ -138,7 +141,6 @@ function createTodoElement(todoObj, dayIndex, todoIndex) {
   li.classList.add('todo-item');
   li.setAttribute('contenteditable', 'false');
 
-  // to make todo item draggable
   li.setAttribute('draggable', 'true');
   li.dataset.dayIndex = dayIndex;
   li.dataset.todoIndex = todoIndex;
@@ -180,7 +182,6 @@ function attachInputListener(dayIndex) {
 
   inputField.addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
-      // to prevent form submission
       event.preventDefault();
       const todoText = inputField.value.trim();
       const selectedEmoji = emojiSelect.textContent.trim();
@@ -199,7 +200,7 @@ function attachInputListener(dayIndex) {
 }
 
 function getTodosFromLocalStorage(dayIndex) {
-  const weekKey = `week-${currentWeekOffset}`;
+  const weekKey = `week-${currentWeekStartDateString}`;
   const savedTodos = JSON.parse(localStorage.getItem(weekKey)) || {};
   return savedTodos[dayIndex] || [];
 }
@@ -210,7 +211,6 @@ function enableEdit(li, dayIndex, todoIndex) {
   span.classList.add('editing-todo');
   span.focus();
 
-  // saves/deletes todo if editing is done (on enter/return key or losing focus/blur)
   function saveEdit(event) {
     if (event.type === 'blur' || event.key === 'Enter') {
       event.preventDefault();
@@ -228,12 +228,10 @@ function processTodoEdit(li, dayIndex, todoIndex) {
   const span = li.querySelector('.todo-text');
   const newTodoText = span.innerText.trim();
   if (newTodoText) {
-    // save the updated todo
     span.setAttribute('contenteditable', 'false');
     span.classList.remove('editing-todo');
     updateTodoText(dayIndex, todoIndex, newTodoText);
   } else {
-    // delete todo if its empty
     li.remove();
     deleteTodo(dayIndex, todoIndex);
   }
@@ -267,7 +265,6 @@ function showEmojiSelectorForTodo(emojiSpan, li, todoObj, dayIndex, todoIndex) {
       updateTodoEmoji(dayIndex, todoIndex, emoji);
       emojiSpan.textContent = emoji;
 
-      // update background color after emoji
       li.classList.remove(...Object.values(statusClasses));
       if (statusClasses[emoji]) {
         li.classList.add(statusClasses[emoji]);
@@ -319,7 +316,6 @@ function nextWeek() {
   renderWeek();
 }
 
-//mobile swiping
 let touchstartX = 0;
 let touchendX = 0;
 
@@ -337,7 +333,6 @@ document.addEventListener('touchend', (event) => {
   handleGesture();
 });
 
-// keyboard nav
 document.addEventListener('keydown', (event) => {
   if (event.key === 'ArrowRight') nextWeek();
   if (event.key === 'ArrowLeft') previousWeek();
@@ -347,13 +342,12 @@ window.onload = function () {
   renderWeek();
 };
 
-// drag and drop
 let draggedItem = null;
 
 function handleDragStart(event) {
   draggedItem = this;
   event.dataTransfer.effectAllowed = 'move';
-  event.dataTransfer.setData('text/plain', null); // for Firefox
+  event.dataTransfer.setData('text/plain', null);
 
   this.classList.add('dragging');
 }
