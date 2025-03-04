@@ -26,7 +26,12 @@
           allowfullscreen
         ></iframe>
       </div>
-      <div class="year-header" id="yearHeader"></div>
+      <div class="year-header-container">
+        <div class="year-header" id="yearHeader"></div>
+        <button id="clear-todos-btn" onclick="clearMonthTodos()">
+          reset month
+        </button>
+      </div>
       <div class="nav-buttons">
         <button onclick="previousMonth()">←</button>
         <button onclick="nextMonth()">→</button>

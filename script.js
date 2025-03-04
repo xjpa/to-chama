@@ -476,6 +476,23 @@
   */
 
   // =====================================================
+  // Clear month todos
+  // =====================================================
+
+  const clearMonthTodos = () => {
+    localStorage.removeItem(getMonthKey());
+    renderMonth();
+  };
+
+  // =====================================================
+  // Global shits
+  // =====================================================
+
+  window.clearMonthTodos = clearMonthTodos;
+  window.previousMonth = previousMonth;
+  window.nextMonth = nextMonth;
+
+  // =====================================================
   // Initialization
   // =====================================================
   window.onload = () => renderMonth();
