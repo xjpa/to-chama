@@ -56,6 +56,7 @@
           day: 'numeric',
         }),
         year: date.getFullYear(),
+        fullDate: date,
       });
     }
 
@@ -70,14 +71,24 @@
     currentMonthStartDateString = monthStartDateString;
     monthContainer.innerHTML = '';
 
-    // Create month grid
     const monthDiv = document.createElement('div');
     monthDiv.classList.add('month');
 
-    monthDays.forEach(({ day, date }, index) => {
+    const today = new Date();
+
+    monthDays.forEach(({ day, date, fullDate }, index) => {
       const dayDiv = document.createElement('div');
       dayDiv.classList.add('day');
       dayDiv.dataset.dayIndex = index;
+
+      if (
+        today.getDate() === fullDate.getDate() &&
+        today.getMonth() === fullDate.getMonth() &&
+        today.getFullYear() === fullDate.getFullYear()
+      ) {
+        dayDiv.classList.add('current-day');
+      }
+
       dayDiv.innerHTML = `
         <h3>${day}, ${date}</h3>
         <ul class="todo-list" id="todo-${index}"></ul>
@@ -91,7 +102,6 @@
           </div>
         </div>
       `;
-      // Attach drag-and-drop listeners for the day container
       dayDiv.addEventListener('dragover', handleDragOver);
       dayDiv.addEventListener('drop', handleDropOnList);
       dayDiv.addEventListener('dragleave', handleDragLeave);
@@ -99,14 +109,11 @@
     });
 
     monthContainer.appendChild(monthDiv);
-
-    // Initialize per-day functionality (emoji selectors, todos, input listener)
     monthDays.forEach((_, index) => {
       initEmojiSelector(index);
       loadTodos(index);
       attachInputListener(index);
     });
-
     yearHeader.innerText = `${monthName} ${monthYear}`;
   };
 

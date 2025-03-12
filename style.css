@@ -253,3 +253,9 @@ input[type='text'] {
 #clear-todos-btn:hover {
   background-color: #0056b3;
 }
+
+.current-day {
+  border: 2px solid #2196f3;  
+  background-color: #e3f2fd;    
+  box-shadow: 0 0 10px rgba(33, 150, 243, 0.6);  /* blue glow effect */
+}
